@@ -1,4 +1,4 @@
-#!/Users/vdzerniuk/Projects/diplom/my_env/bin/python3.12
+#!/Users/vdzerniuk/Projects/diplom/python_deep_learning/my_env/bin/python3.12
 # -*- coding: utf-8 -*-
 import re
 import sys
