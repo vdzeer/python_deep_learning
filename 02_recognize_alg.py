@@ -122,23 +122,39 @@ def plot_kullback_vs_delta(classifier, X, y, delta_range=np.linspace(0.1, 0.5, 1
     plt.savefig(save_path)
     plt.show()
 
-def plot_kullback_vs_radius(X, y, radius_range=range(10, 110, 10), save_path="kullback_vs_radius.png"):
+def plot_kullback_vs_radius(X, y, target_class="", class_name="", save_path="kullback_vs_radius.png", radius_range=range(10, 110, 10)):
     kullback_scores = []
+    
+    class_data = X[y == target_class]
+    
+    if len(class_data) == 0:
+        print(f"No data for class '{class_name}'. Cannot generate plot.")
+        return
+    
+    center = class_data.mean(axis=0)
+    
     for radius in radius_range:
-        within_radius = []
-        for label in np.unique(y):
-            class_data = X[y == label]
-            center = class_data.mean(axis=0)
-            distances = np.linalg.norm(class_data - center, axis=1)
-            within_radius.append(np.sum(distances <= radius) / len(class_data))
+        distances = np.linalg.norm(class_data - center, axis=1)
+        within_radius_count = np.sum(distances <= radius)
         
-        kullback_score = -np.sum([p * np.log(p) for p in within_radius if p > 0])
+        if within_radius_count == 0:
+            print(f"No data within radius {radius} for class '{class_name}'. Skipping this radius.")
+            kullback_scores.append(0)
+            continue
+        
+        within_radius = within_radius_count / len(class_data)
+        
+        kullback_score = -within_radius * np.log(within_radius) if within_radius > 0 else 0
         kullback_scores.append(kullback_score)
     
-    plt.plot(radius_range, kullback_scores, marker='o')
+    plt.figure(figsize=(10, 5))
+    plt.plot(radius_range, kullback_scores, marker='o', color="green", label=f"{class_name} Class")
     plt.xlabel("Радіус контейнерів")
     plt.ylabel("Критерій Кульбака")
-    plt.title("Залежність критерію Кульбака від радіуса контейнерів")
+    plt.title(f"Залежність критерію Кульбака від радіуса контейнерів для {class_name}")
+    
+    plt.legend()
+    plt.grid(True)
     plt.savefig(save_path)
     plt.show()
 
@@ -166,8 +182,8 @@ plot_class_confidences(classifier.predict_proba(X), tolerance, "class_confidence
 delta_range = np.linspace(0.1, 0.5, 10)
 plot_kullback_vs_delta(classifier, X, y, delta_range, "kullback_vs_delta.png")
 
-radius_range = range(10, 110, 10)
-plot_kullback_vs_radius(X, y, radius_range, "kullback_vs_radius.png")
+plot_kullback_vs_radius(X, y, target_class=0, class_name="Forest", save_path="kullback_vs_radius_forest.png")
+plot_kullback_vs_radius(X, y, target_class=2, class_name="Road", save_path="kullback_vs_radius_road.png")
 
 # Побудова декурсивного бінарного дерева
 tree_classifier = recursive_binary_tree_classification(X, y, max_depth=3)
