@@ -115,10 +115,14 @@ def plot_kullback_vs_delta(classifier, X, y, delta_range=np.linspace(0.1, 0.5, 1
         kullback_score = calculate_kullback_criterion(predictions, y, delta)
         kullback_scores.append(kullback_score)
     
-    plt.plot(delta_range, kullback_scores, marker='o')
+    plt.figure(figsize=(10, 6))
+    plt.plot(delta_range, kullback_scores, marker='o', label="Критерій Кульбака")
     plt.xlabel("Delta")
     plt.ylabel("Критерій Кульбака")
     plt.title("Залежність критерію Кульбака від параметра Delta")
+    plt.axvline(delta_range[np.argmax(kullback_scores)], color="red", linestyle="--", label="Оптимальний Delta")
+    plt.legend()
+    plt.grid(True)
     plt.savefig(save_path)
     plt.show()
 
